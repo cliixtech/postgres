@@ -1,3 +1,10 @@
+# About Cliix Fork
+
+This fork aims to customize Postgres' docker container for our needs. For now the changes
+made to this include:
+
+* Enable logging during application start (docker-entrypoint.sh)
+
 # About this Repo
 
 This is the Git repo of the Docker [official image](https://docs.docker.com/docker-hub/official_repos/) for [postgres](https://registry.hub.docker.com/_/postgres/). See [the Docker Hub page](https://registry.hub.docker.com/_/postgres/) for the full readme on how to use this Docker image and for information regarding contributing and issues.

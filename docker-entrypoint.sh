@@ -1,6 +1,33 @@
 #!/bin/bash
 set -e
 
+##
+# Cliix specific functions
+##
+configure_log() {
+  CONF_FILE="${PGDATA}/postgresql.conf"
+	if [ -f ${CONF_FILE} ]; then
+		cp ${CONF_FILE} /tmp/postgresql.conf
+		sed -i 's/#log_min_duration_statement = -1/log_min_duration_statement = 150/g;
+						s/#log_connections = off/log_connections = on/g;
+						s/#log_disconnections = off/log_disconnections = on/g;
+						s/#log_lock_waits = off/log_lock_waits = on/g' /tmp/postgresql.conf
+		if [ $(cmp -s /tmp/postgresql.conf ${CONF_FILE} && echo 0 || echo 1) -eq 1 ]; then
+			echo "Configuration file changed."
+			cp ${CONF_FILE} ${CONF_FILE}.ori
+			mv /tmp/postgresql.conf ${CONF_FILE}
+		else
+			echo "No configuration changed this time."
+		fi
+	else
+		echo "Oops! Config file not available."
+	fi
+}
+
+
+###
+# Original
+###
 # usage: file_env VAR [DEFAULT]
 #    ie: file_env 'XYZ_DB_PASSWORD' 'example'
 # (will allow for "$XYZ_DB_PASSWORD_FILE" to fill in the value of
@@ -78,7 +105,7 @@ if [ "$1" = 'postgres' ]; then
 
 		{ echo; echo "host all all all $authMethod"; } | tee -a "$PGDATA/pg_hba.conf" > /dev/null
 
-		# internal start of server in order to allow set-up using psql-client		
+		# internal start of server in order to allow set-up using psql-client
 		# does not listen on external TCP/IP and waits until start finishes
 		PGUSER="${PGUSER:-postgres}" \
 		pg_ctl -D "$PGDATA" \
@@ -128,5 +155,7 @@ if [ "$1" = 'postgres' ]; then
 		echo
 	fi
 fi
+
+configure_log
 
 exec "$@"
